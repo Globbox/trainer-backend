@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - '8000:8000'
+    restart: always
+    env_file:
+      - .env
+    command: start_web.sh
+    hostname: web-service
+    volumes:
+      - ./static:/www/project/static
+      - ./media:/www/project/media
+      - ./logs:/www/project/logs
+
+  db:
+    image: mysql:8.3.0
+    ports:
+      - '3306:3306'
+    hostname: db-service
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
+    env_file:
+      - .env
