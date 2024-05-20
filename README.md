@@ -48,20 +48,20 @@
    ```bash
    git clone https://github.com/your_username/english-language-trainer-backend.git
    ```
-   
+
 2. Создаём файл .env с переменными окружения(пример описан в файле [.env.example](.env.example)):
-  
-| Имя                    | Описание                  |
-| ---------------------- |---------------------------|
-| SECRET_KEY             | Секретный ключ для Django |
-| ALLOWED_HOSTS          | Разрешенные IP            |
-| DJANGO_SETTINGS_MODULE | Модуль Django             |
-| DB_HOST                | Host базы данных          |
-| DB_PORT                | Порт базы данных          |
-| DB_NAME                | Имя базы данных           |
-| DB_USER                | Пользователь              |
-| DB_PASS                | Пароль                    |
-| DB_ROOT_PASS           | Пароль root пользователя  |
+
+  | Имя                    | Описание                  |
+  |------------------------|---------------------------|
+  | SECRET_KEY             | Секретный ключ для Django |
+  | ALLOWED_HOSTS          | Разрешенные IP            |
+  | DJANGO_SETTINGS_MODULE | Модуль Django             |
+  | DB_HOST                | Host базы данных          |
+  | DB_PORT                | Порт базы данных          |
+  | DB_NAME                | Имя базы данных           |
+  | DB_USER                | Пользователь              |
+  | DB_PASS                | Пароль                    |
+  | DB_ROOT_PASS           | Пароль root пользователя  |
 
 3. Поднимаем контейнер для разработки:
   ```bash

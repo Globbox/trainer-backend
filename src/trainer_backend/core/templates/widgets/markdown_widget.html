@@ -1,0 +1,29 @@
+<div class="no-flex">
+    <style type="text/css">
+        .CodeMirror {
+            overflow-wrap: break-word;
+            resize: both;
+            min-height: 200px;
+            min-width: 150px;
+            max-height: none;
+        }
+    </style>
+    <textarea name="{{ widget.name }}" class="{{ widget.attrs.class }}">{{ widget.value|default:'' }}</textarea>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let simplemde = new SimpleMDE({
+            element: document.querySelector("textarea[name='{{ widget.name }}'], [class=markdown-editor]"),
+            previewRender: function(plainText) {
+                return SimpleMDE.prototype.markdown(plainText);
+            },
+            status: false,
+            toolbar: [
+                "bold", "italic", "|", "preview"
+            ],
+            toolbarTips: true,
+            toolbarGuideIcon: true,
+            spellChecker: false,
+        });
+    });
+</script>

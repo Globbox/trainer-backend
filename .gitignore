@@ -12,5 +12,3 @@ media/
 logs/
 
 .env
-
-local_db/
