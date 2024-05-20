@@ -26,9 +26,14 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
-THIRD_PARTY_APPS = []
+THIRD_PARTY_APPS = [
+    'rest_framework.authtoken',
+]
 
-LOCAL_APPS = []
+LOCAL_APPS = [
+    'trainer_backend.auth',
+    'trainer_backend.task',
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -96,6 +101,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "auth.User"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -110,7 +122,7 @@ USE_TZ = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR.parent, 'static')

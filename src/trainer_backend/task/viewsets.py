@@ -28,6 +28,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     # #     # serializer_class = self.get_serializer_class()
     # #     # kwargs.setdefault('context', self.get_serializer_context())
     # #     return MediaTaskSerializer(*args, **kwargs, many=False)
+    def list(self, request, *args, **kwargs):
+        return self.get_queryset()
 
     def create(self, request, *args, **kwargs):
         #     self.queryset.create(

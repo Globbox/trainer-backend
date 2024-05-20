@@ -31,12 +31,6 @@ class Task(models.Model):
 
     class Meta:
         verbose_name = 'Задача'
-        indexes = [
-            models.Index(
-                name='%(app_label)s_%(class)s_media_type',
-                fields=['media_type'],
-            )
-        ]
 
 
 class TaskGroup(models.Model):

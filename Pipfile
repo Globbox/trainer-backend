@@ -9,7 +9,8 @@ mysqlclient = "~=2.2.4"
 choicesenum = "~=0.7.0"
 djangorestframework = "~=3.14.0"
 gunicorn = "~=20.1"
-
+djangorestframework-simplejwt = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 flake8 = "*"
