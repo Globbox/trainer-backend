@@ -1,0 +1,27 @@
+[flake8]
+exclude =
+    .git,
+    .idea,
+    .vscode,
+    .venv,
+    .pytest_cache,
+    __pycache__,
+    # Django exclude
+    */migrations/*.py,
+    */settings/*.py
+
+ignore =
+    # Missing docstring in public module
+    D100,
+    # Missing docstring in public nested class
+    D106,
+    # Missing docstring in magic method
+    D105,
+    # Missing docstring in public package
+    D104,
+    # Missing docstring in __init__
+    D107,
+
+max-line-length = 79
+import-order-style = pep8
+
