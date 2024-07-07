@@ -5,4 +5,3 @@ class AppConfig(BaseAppConfig):
     """Конфигурация приложения Аутентификация."""
 
     name = __package__
-    label = 'local_auth'
