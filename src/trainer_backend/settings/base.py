@@ -4,7 +4,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -31,8 +30,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'trainer_backend.auth',
-    'trainer_backend.task',
+    'trainer_backend.user',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -67,7 +65,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'trainer_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -81,7 +78,6 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASS', ''),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -101,7 +97,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = "auth.User"
+AUTH_USER_MODEL = 'user.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -117,6 +113,23 @@ TIME_ZONE = os.getenv('TZ', 'Asia/Vladivostok')
 USE_I18N = True
 USE_TZ = False
 
+DATE_INPUT_FORMATS = [
+    '%d.%m.%Y',  # '25-10-2006'
+    '%Y-%m-%d',  # '2006-10-25'
+]
+DATETIME_INPUT_FORMATS = [
+    '%d.%m.%Y %H:%M:%S',     # '25.10.2006 14:30:59'
+    '%d.%m.%Y %H:%M:%S.%f',  # '25.10.2006 14:30:59.000200'
+    '%d.%m.%Y %H:%M',        # '25.10.2006 14:30'
+    '%d.%m.%y %H:%M:%S',     # '25.10.06 14:30:59'
+    '%d.%m.%y %H:%M:%S.%f',  # '25.10.06 14:30:59.000200'
+    '%d.%m.%y %H:%M',        # '25.10.06 14:30'
+    '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
+    '%Y-%m-%d %H:%M:%S.%f',  # '2006-10-25 14:30:59.000200'
+    '%Y-%m-%d %H:%M',        # '2006-10-25 14:30'
+]
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -126,9 +139,7 @@ APPEND_SLASH = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR.parent, 'static')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATICFILES_DIRS = []
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR.parent, 'media')

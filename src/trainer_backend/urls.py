@@ -3,12 +3,12 @@ from django.urls import path
 from django.urls import include
 
 from trainer_backend.common.api.routers import ExtendableRouter
-from trainer_backend.auth.routers import router as auth_router
-from trainer_backend.task.routers import router as task_router
+from trainer_backend.user.routers import auth_router
+from trainer_backend.user.routers import user_router
 
 api_router = ExtendableRouter()
 api_router.extend(auth_router)
-api_router.extend(task_router)
+api_router.extend(user_router)
 
 
 urlpatterns = [
