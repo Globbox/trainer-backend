@@ -17,6 +17,7 @@ RUN set -ex && \
     apt-get install -y nano python3-dev default-libmysqlclient-dev build-essential pkg-config && \
     python -m pip install --upgrade --force pip && \
     pip install wheel pipenv && \
+    pip install django-cors-headers && \
     apt-get autoremove
 
 COPY ./Pipfile* $PROJECT_ROOT/
