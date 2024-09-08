@@ -2,24 +2,25 @@ services:
   web:
     build:
       context: .
-      dockerfile: docker/Dockerfile
-    ports:
-      - '8000:8000'
+      dockerfile: docker/dev/Dockerfile
     restart: always
+    expose:
+      - 8000
     env_file:
       - .env
-    command: start_web.sh
-    hostname: web-service
+    depends_on:
+      - db
+    entrypoint: ["entrypoint.sh"]
     volumes:
-      - ./static:/www/project/static
-      - ./media:/www/project/media
-      - ./logs:/www/project/logs
+      - ./src:/www/backend
+      - logs_volume:/www/logs
+      - static_volume:/www/static
+      - media_volume:/www/media
+      - mail_volume:/www/mail
 
   db:
     image: mysql:8.3.0
-    ports:
-      - '3306:3306'
-    hostname: db-service
+    restart: always
     environment:
       MYSQL_DATABASE: $DB_NAME
       MYSQL_USER: $DB_USER
@@ -27,3 +28,39 @@ services:
       MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
     env_file:
       - .env
+    volumes:
+      - db_data:/var/lib/mysql
+
+  nginx:
+    restart: always
+    build: ./nginx/
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/www/static
+      - media_volume:/www/media
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    entrypoint: celery -A trainer_backend.celery_config:celery_app worker -l INFO -n trainer-worker@%n -Q default
+
+  redis:
+    image: redis:latest
+    expose:
+      - "6379"
+
+volumes:
+  db_data:
+  logs_volume:
+  static_volume:
+  media_volume:
+  mail_volume:
