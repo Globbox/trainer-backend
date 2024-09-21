@@ -1,7 +1,11 @@
+import os
+
+from django.conf import settings
 from django.db.models import OuterRef
 from django.db.models import Subquery
 from rest_framework import serializers
 
+from trainer_backend.core.api.serializers import Base64FileField
 from trainer_backend.core.api.serializers import EnumField
 from trainer_backend.trainer.enums import AudioGuidanceType
 from trainer_backend.trainer.enums import ExamType
@@ -9,6 +13,7 @@ from trainer_backend.trainer.enums import TaskType
 from trainer_backend.trainer.mixins import AddAudioGuidanceMixin
 from trainer_backend.trainer.mixins import AddQuestionAudioGuidanceMixin
 from trainer_backend.trainer.mixins import AddTaskParametersMixin
+from trainer_backend.trainer.models import Answer
 from trainer_backend.trainer.models import Exam
 from trainer_backend.trainer.models import Image
 from trainer_backend.trainer.models import Question
@@ -165,4 +170,40 @@ class ExtendedExamSerializer(AddAudioGuidanceMixin, ExamSerializer):
             'number',
             'type',
             'tasks'
+        ]
+
+
+class QuestionAnswerSerializer(serializers.Serializer):
+    """Сериализатор для вопросов в ответах."""
+
+    question_id = serializers.IntegerField()
+    audio = Base64FileField()
+
+
+class TaskAnswerSerializer(serializers.Serializer):
+    """Сериализатор для вопросов в ответах."""
+
+    task_id = serializers.IntegerField()
+    audio = Base64FileField(allow_null=True, required=False)
+    questions = QuestionAnswerSerializer(many=True, required=False)
+
+
+class AnswerSerializer(serializers.ModelSerializer):
+    """Сериализатор для ответов."""
+
+    def to_representation(self, instance):
+        """Преобразование в объект."""
+        representation = super().to_representation(instance)
+        if representation['answer_archive']:
+            representation['answer_archive'] = os.path.join(
+                settings.MEDIA_URL, instance.answer_archive.name
+            )
+        return representation
+
+    class Meta:
+        model = Answer
+        fields = [
+            'id',
+            'created_at',
+            'answer_archive',
         ]

@@ -3,6 +3,7 @@ from django.urls import include
 from django.urls import path
 
 from trainer_backend.core.api.routers import ExtendableRouter
+from trainer_backend.trainer.routers import answer_router
 from trainer_backend.trainer.routers import ege_router
 from trainer_backend.trainer.routers import oge_router
 from trainer_backend.trainer.routers import thematic_content_router
@@ -16,6 +17,7 @@ api_router.extend(user_router)
 api_router.extend(thematic_content_router)
 api_router.extend(ege_router)
 api_router.extend(oge_router)
+api_router.extend(answer_router)
 
 
 urlpatterns = [

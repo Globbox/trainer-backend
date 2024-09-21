@@ -182,7 +182,9 @@ APPEND_SLASH = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR.parent.parent, 'static')
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent, 'media')
@@ -199,6 +201,8 @@ AUDIO_GUIDANCE_DIR = os.getenv('AUDIO_GUIDANCE_DIR', 'audio_guidance')
 IMAGE_TASK_DIR = os.getenv('IMAGE_TASK_DIR', 'image_task')
 
 AUDIO_TASK_DIR = os.getenv('AUDIO_TASK_DIR', 'audio_task')
+
+ANSWER_TASK_DIR = os.getenv('ANSWER_TASK_DIR', 'answer_task')
 
 
 # Celery

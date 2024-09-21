@@ -52,6 +52,15 @@ class AddTaskParametersMixin:
 
         return {**instance, **audio_guidance}
 
+    def add_task_number(self, task_type, instance):
+        """Добавить номер задания."""
+        task_mixin = self._audio_task_guidance_map.get(task_type)
+
+        if task_mixin is not None:
+            instance['number'] = task_mixin['number']
+
+        return instance
+
 
 class AddQuestionAudioGuidanceMixin:
     """Миксин расширяющий класс для добавления аудио сопровождения вопросов."""

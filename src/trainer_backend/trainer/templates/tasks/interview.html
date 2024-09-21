@@ -1,0 +1,13 @@
+{% extends "tasks/base_task.html" %}
+{% block content %}
+    <style>
+        .int-task-description {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+    <div class="int-task-description">
+        {{ description|safe|linebreaks }}
+    </div>
+{% endblock %}

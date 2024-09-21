@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from trainer_backend.core.file.mixins import AudioFileConvertMixin
 from trainer_backend.core.file.utils import upload_hash_file
 
 from .base import Question
@@ -21,13 +22,19 @@ class Answer(models.Model):
         verbose_name="Пользователь",
         related_name='answers'
     )
+    answer_archive = models.FileField(
+        null=True,
+        blank=True,
+        upload_to=settings.ANSWER_TASK_DIR,
+        verbose_name='Архив ответа',
+    )
 
     class Meta:
         verbose_name = "Ответ пользователя"
         verbose_name_plural = "Ответы пользователя"
 
 
-class TaskAnswer(models.Model):
+class TaskAnswer(AudioFileConvertMixin, models.Model):
     """Модель ответов к заданиям."""
 
     answer = models.ForeignKey(
@@ -50,11 +57,17 @@ class TaskAnswer(models.Model):
         null=True,
         blank=True,
         upload_to=upload_hash_file(
-            'audio_answer',
+            'audio',
             settings.AUDIO_TASK_DIR,
         ),
         verbose_name='Аудио задание',
     )
+
+    def save(self, *args, **kwargs):
+        """Обработка перед изменением/добавлением."""
+        if bool(self.audio):
+            self.audio = self.convert_audio(self.audio)
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ('answer', 'task')
@@ -62,7 +75,7 @@ class TaskAnswer(models.Model):
         verbose_name_plural = "Ответы пользователя к заданиям"
 
 
-class QuestionAnswer(models.Model):
+class QuestionAnswer(AudioFileConvertMixin, models.Model):
     """Модель ответов к вопросам."""
 
     task = models.ForeignKey(
@@ -83,11 +96,17 @@ class QuestionAnswer(models.Model):
     )
     audio = models.FileField(
         upload_to=upload_hash_file(
-            'audio_answer',
+            'audio',
             settings.AUDIO_TASK_DIR,
         ),
         verbose_name='Аудио задание',
     )
+
+    def save(self, *args, **kwargs):
+        """Обработка перед изменением/добавлением."""
+        if bool(self.audio):
+            self.audio = self.convert_audio(self.audio)
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ('task', 'question')

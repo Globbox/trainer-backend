@@ -1,0 +1,44 @@
+{% extends "tasks/base_task.html" %}
+{% block content %}
+    <style>
+        .sta-task-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .sta-task-description {
+            width: 60%;
+            font-size: 14px;
+        }
+        .sta-task-image {
+            width: 35%;
+            text-align: center;
+        }
+        .sta-image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sta-task-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .sta-image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <div class="sta-task-container">
+        <div class="sta-task-description">
+            {{ description|safe|linebreaks }}
+        </div>
+        <div class="sta-task-image">
+            {% for image in images %}
+                <div class="sta-image-container">
+                    <div class="sta-task-title">
+                        {{ image.header }}
+                    </div>
+                    <img src="{{ image.url }}" alt="{{ image.header }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

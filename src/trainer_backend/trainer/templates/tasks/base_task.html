@@ -1,0 +1,27 @@
+<style>
+    .b-task-info {
+        display: inline;
+        margin-bottom: 5px;
+    }
+    .b-task-number {
+        font-weight: bold;
+        font-size: 24px;
+    }
+    .b-task-header {
+        display: inline;
+        font-size: 14px;
+    }
+    .b-divider {
+        margin: 10px 0;
+        border-bottom: 1px solid #000000;
+    }
+</style>
+<div>
+    <div class="b-task-info">
+        <span class="b-task-number">Task {{ number }}</span>
+        <span class="b-task-header">{{ header|safe }}</span>
+    </div>
+    <div class="b-divider"></div>
+    {% block content %}
+    {% endblock %}
+</div>
