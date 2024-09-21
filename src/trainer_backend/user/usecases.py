@@ -1,14 +1,16 @@
-from urllib.parse import urljoin
+import posixpath
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from trainer_backend.core.common.usecase import AbstractUseCase
-from trainer_backend.core.email.reset_password import ResetPasswordEmailSender
-from trainer_backend.user.generators import account_activation_token
+from trainer_backend.user.generators import email_confirm_token
+from trainer_backend.user.generators import password_reset_token
 
 from .models import User
+from .tasks import confirm_email_task
+from .tasks import reset_password_task
 
 
 class ResetUserPasswordUseCase(AbstractUseCase):
@@ -19,11 +21,33 @@ class ResetUserPasswordUseCase(AbstractUseCase):
         if not isinstance(user, User):
             raise ValueError("Incorrect user")
 
-        token = account_activation_token.make_token(user)
+        token = password_reset_token.make_token(user)
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_url = urljoin(settings.PASSWORD_RESET_URL, f'{uid}/{token}')
+        reset_url = posixpath.join(
+            settings.PASSWORD_RESET_URL, f'{uid}/{token}'
+        )
 
-        ResetPasswordEmailSender().send(
+        reset_password_task.delay(
+            user.email, reset_url
+        )
+
+
+class ConfirmEmailUseCase(AbstractUseCase):
+    """UseCase для подтверждения email пользователя."""
+
+    def execute(self, user, *args, **kwargs):
+        """Подтвердить email пользователя."""
+        if not isinstance(user, User):
+            raise ValueError("Incorrect user")
+
+        token = email_confirm_token.make_token(user)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = posixpath.join(
+            settings.CONFIRM_EMAIL_URL, f'{uid}/{token}'
+        )
+
+        confirm_email_task.delay(
             user.email, reset_url
         )

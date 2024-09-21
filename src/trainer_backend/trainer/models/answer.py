@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.db import models
+from django.dispatch import receiver
 
-from trainer_backend.core.file.utils import upload_hash_file
-
+from ..enums import AnswerStatus
 from .base import Question
 from .base import Task
 
@@ -13,6 +12,10 @@ class Answer(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True
     )
+    status = models.SmallIntegerField(
+        default=AnswerStatus.UNPROCESSED.value,
+        choices=AnswerStatus.choices(),
+    )
     user = models.ForeignKey(
         'user.User',
         null=True,
@@ -20,6 +23,18 @@ class Answer(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
         related_name='answers'
+    )
+    full_audio = models.FileField(
+        null=True,
+        blank=True,
+        upload_to='answer/',
+        verbose_name='Полный ответ пользователя',
+    )
+    answer_archive = models.FileField(
+        null=True,
+        blank=True,
+        upload_to='answer/',
+        verbose_name='Архив ответа',
     )
 
     class Meta:
@@ -49,11 +64,8 @@ class TaskAnswer(models.Model):
     audio = models.FileField(
         null=True,
         blank=True,
-        upload_to=upload_hash_file(
-            'audio_answer',
-            settings.AUDIO_TASK_DIR,
-        ),
-        verbose_name='Аудио задание',
+        upload_to='answer/',
+        verbose_name='Ответ на задание',
     )
 
     class Meta:
@@ -82,14 +94,28 @@ class QuestionAnswer(models.Model):
         verbose_name="Номер вопроса"
     )
     audio = models.FileField(
-        upload_to=upload_hash_file(
-            'audio_answer',
-            settings.AUDIO_TASK_DIR,
-        ),
-        verbose_name='Аудио задание',
+        upload_to='answer/',
+        verbose_name='Ответ на вопрос',
     )
 
     class Meta:
         unique_together = ('task', 'question')
         verbose_name = "Ответ пользователя к вопросу"
         verbose_name_plural = "Ответы пользователя к вопросам"
+
+
+@receiver(models.signals.post_delete, sender=QuestionAnswer)
+@receiver(models.signals.post_delete, sender=TaskAnswer)
+def auto_delete_audio_files(sender, instance, **kwargs):
+    """Удаление файла при удалении записи."""
+    if instance.audio:
+        instance.audio.delete(save=False)
+
+
+@receiver(models.signals.post_delete, sender=Answer)
+def auto_delete_answer_files(sender, instance, **kwargs):
+    """Удаление файлов при удалении записи."""
+    if instance.full_audio:
+        instance.full_audio.delete(save=False)
+    if instance.answer_archive:
+        instance.answer_archive.delete(save=False)

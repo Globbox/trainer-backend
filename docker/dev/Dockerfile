@@ -40,13 +40,13 @@ RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY ./src $PROJECT_ROOT
 
-# Create Non-Root user
-RUN groupadd -r appusergroup && \
-    useradd -r -g appusergroup \
-    --no-create-home \
-    appuser
+# # Create Non-Root user
+# RUN groupadd -r appusergroup && \
+#     useradd -r -g appusergroup \
+#     --no-create-home \
+#     appuser
 
-RUN chown -R appuser:appusergroup $APP_ROOT $USR_LOCAL_BIN && \
-    chmod -R u+rwx,g+rx,o-rwx $APP_ROOT
+# RUN chown -R appuser:appusergroup $APP_ROOT $USR_LOCAL_BIN && \
+#     chmod -R u+rwx,g+rx,o-rwx $APP_ROOT
 
-USER appuser
+# USER appuser

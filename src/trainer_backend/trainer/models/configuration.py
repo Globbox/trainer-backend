@@ -1,13 +1,13 @@
-from django.conf import settings
 from django.db import models
+from django.dispatch import receiver
 
-from trainer_backend.core.file.mixins import AudioFileConvertMixin
-from trainer_backend.core.file.utils import upload_hash_file
 from trainer_backend.trainer.enums import AudioGuidanceType
 from trainer_backend.trainer.enums import TaskType
 
+from .base import ModelWithAudioFileMixin
 
-class AudioGuidance(AudioFileConvertMixin, models.Model):
+
+class AudioGuidance(ModelWithAudioFileMixin, models.Model):
     """Модель для хранения аудио сопровождения."""
 
     guidance_type = models.PositiveSmallIntegerField(
@@ -17,27 +17,21 @@ class AudioGuidance(AudioFileConvertMixin, models.Model):
     )
 
     audio = models.FileField(
-        upload_to=upload_hash_file(
-            'audio',
-            settings.AUDIO_GUIDANCE_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Аудио файл',
     )
 
     def __str__(self):
         return AudioGuidanceType.get(self.guidance_type).display
 
-    def clean(self):
-        """Обработка перед изменением/добавлением."""
-        super(AudioGuidance, self).clean()
-        self.audio = self.convert_audio(self.audio)
-
     class Meta:
         verbose_name = "Аудио сопровождение"
         verbose_name_plural = "Аудио сопровождения"
 
 
-class QuestionAudioGuidance(models.Model, AudioFileConvertMixin):
+class QuestionAudioGuidance(
+    ModelWithAudioFileMixin, models.Model
+):
     """Модель для хранения аудио сопровождения вопросов."""
 
     question_number = models.PositiveIntegerField(
@@ -46,30 +40,21 @@ class QuestionAudioGuidance(models.Model, AudioFileConvertMixin):
     )
 
     audio = models.FileField(
-        upload_to=upload_hash_file(
-            'audio',
-            settings.AUDIO_GUIDANCE_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Аудио файл',
     )
-
     def __str__(self):
         return f'Аудио сопровождения вопроса {self.question_number}'
-
-    def clean(self):
-        """Обработка перед изменением/добавлением."""
-        super(QuestionAudioGuidance, self).clean()
-        self.audio = self.convert_audio(self.audio)
 
     class Meta:
         verbose_name = "Аудио сопровождение вопросов"
         verbose_name_plural = "Аудио сопровождения вопросов"
 
 
-class TaskTypeParameter(models.Model, AudioFileConvertMixin):
+class TaskTypeParameter(ModelWithAudioFileMixin, models.Model):
     """Параметры для типов заданий."""
 
-    type = models.SmallIntegerField(
+    task_type = models.SmallIntegerField(
         unique=True,
         choices=TaskType.choices(),
         verbose_name='Тип задания',
@@ -78,10 +63,7 @@ class TaskTypeParameter(models.Model, AudioFileConvertMixin):
         verbose_name="Порядок задания в экзамене"
     )
     audio = models.FileField(
-        upload_to=upload_hash_file(
-            'audio',
-            settings.AUDIO_GUIDANCE_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Аудио сопровождение',
     )
     preparation_seconds = models.PositiveIntegerField(
@@ -98,12 +80,16 @@ class TaskTypeParameter(models.Model, AudioFileConvertMixin):
         verbose_name='Кол-во секунд на ответ',
     )
 
-    def clean(self):
-        """Обработка перед изменением/добавлением."""
-        super(TaskTypeParameter, self).clean()
-        self.audio = self.convert_audio(self.audio)
-
     class Meta:
-        unique_together = (('type', 'number'),)
+        unique_together = (('task_type', 'number'),)
         verbose_name = "Параметр для типов заданий"
         verbose_name_plural = "Параметры для типов заданий"
+
+
+@receiver(models.signals.post_delete, sender=AudioGuidance)
+@receiver(models.signals.post_delete, sender=TaskTypeParameter)
+@receiver(models.signals.post_delete, sender=QuestionAudioGuidance)
+def auto_delete_audio_file(sender, instance, **kwargs):
+    """Удаление файла при удалении записи."""
+    if instance.audio:
+        instance.audio.delete(save=False)

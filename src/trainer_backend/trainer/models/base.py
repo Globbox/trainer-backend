@@ -1,15 +1,58 @@
-from django.conf import settings
+import os
+
 from django.db import models
+from django.dispatch import receiver
 
 from trainer_backend.core.db.mixins import ShortDescriptionMixin
 from trainer_backend.core.file.mixins import AudioFileConvertMixin
-from trainer_backend.core.file.utils import upload_hash_file
+from trainer_backend.core.file.mixins import FileHashMixin
 from trainer_backend.trainer.enums import ExamType
 from trainer_backend.trainer.enums import TaskType
 
 
-class Image(models.Model):
+class ModelWithFileMixin(FileHashMixin):
+    """Миксин для моделей с файлами."""
+
+    file_field: str = None
+
+    def save(self, *args, **kwargs):
+        """Сохранение/изменение записи."""
+        file = getattr(self, self.file_field)
+        if not file:
+            return super().save(*args, **kwargs)
+
+        old_file = None
+        if self.pk:
+            old_instance = self.__class__.objects.get(pk=self.pk)
+            old_file = getattr(old_instance, self.file_field)
+
+        if old_file and old_file.name != file.name:
+            old_file_path = old_file.path
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+
+        new_file_path = self.get_file_hash_name(file)
+        setattr(file, 'name', new_file_path)
+        return super().save(*args, **kwargs)
+
+
+class ModelWithAudioFileMixin(ModelWithFileMixin, AudioFileConvertMixin):
+    """Миксин для моделей с аудио файлами."""
+
+    file_field: str = 'audio'
+
+    def save(self, *args, **kwargs):
+        """Сохранение/изменение записи."""
+        file = getattr(self, self.file_field)
+        if file:
+            setattr(self, self.file_field, self.convert_audio(file))
+        super().save(*args, **kwargs)
+
+
+class Image(ModelWithFileMixin, models.Model):
     """Модель для хранения изображений."""
+
+    file_field = 'image'
 
     header = models.CharField(
         max_length=100,
@@ -17,12 +60,17 @@ class Image(models.Model):
     )
 
     image = models.FileField(
-        upload_to=upload_hash_file(
-            'image',
-            settings.IMAGE_TASK_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Изображение',
     )
+
+    def save(self, *args, **kwargs):
+        """Сохранение/изменения записи."""
+        if not self.pk or (
+            self.image != self.__class__.objects.get(pk=self.pk).image
+        ):
+            self.image.name = self.get_file_hash_name(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.header
@@ -42,7 +90,7 @@ class Exam(models.Model):
         default=False,
         verbose_name="Экзамен из банка ФИПИ"
     )
-    type = models.SmallIntegerField(
+    exam_type = models.SmallIntegerField(
         choices=ExamType.choices(),
         verbose_name="Тип экзамена"
     )
@@ -51,12 +99,12 @@ class Exam(models.Model):
         return f'Экзамен {self.number}'
 
     class Meta:
-        unique_together = (('number', 'type'),)
+        unique_together = (('number', 'exam_type'),)
         verbose_name = "Экзамен"
         verbose_name_plural = "Экзамены"
 
 
-class ThematicSpeechContent(models.Model, ShortDescriptionMixin):
+class ThematicSpeechContent(ShortDescriptionMixin, models.Model):
     """Модель тематического содержания речи."""
 
     description_field = 'description'
@@ -88,12 +136,12 @@ class ThematicSpeechContent(models.Model, ShortDescriptionMixin):
         verbose_name_plural = "Тематические содержания речи"
 
 
-class Task(AudioFileConvertMixin, ShortDescriptionMixin, models.Model):
+class Task(ModelWithAudioFileMixin, ShortDescriptionMixin, models.Model):
     """Модель Задание."""
 
     description_field = 'header'
 
-    type = models.SmallIntegerField(
+    task_type = models.SmallIntegerField(
         choices=TaskType.choices(),
         verbose_name='Тип задания',
     )
@@ -113,59 +161,51 @@ class Task(AudioFileConvertMixin, ShortDescriptionMixin, models.Model):
     audio = models.FileField(
         null=True,
         blank=True,
-        upload_to=upload_hash_file(
-            'audio',
-            settings.AUDIO_TASK_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Аудио задание',
     )
 
     def __str__(self):
         return f'Задание. {self.get_short_description()}'
 
-    def clean(self):
-        """Обработка перед изменением/добавлением."""
-        super().clean()
-        if bool(self.audio):
-            self.audio = self.convert_audio(self.audio)
-
     class Meta:
         verbose_name = "Задание"
         verbose_name_plural = "Задания"
 
 
-class Question(AudioFileConvertMixin, ShortDescriptionMixin, models.Model):
+class Question(ModelWithAudioFileMixin, ShortDescriptionMixin, models.Model):
     """Модель вопросов."""
 
     description_field = 'description'
 
     description = models.TextField(
-        blank=True,
         verbose_name='Описание',
     )
     audio = models.FileField(
         null=True,
         blank=True,
-        upload_to=upload_hash_file(
-            'audio',
-            settings.AUDIO_TASK_DIR,
-        ),
+        upload_to='guidance/',
         verbose_name='Аудио задание',
     )
 
-    def clean(self):
-        """Обработка перед изменением/добавлением."""
-        super().clean()
-        if bool(self.audio):
-            self.audio = self.convert_audio(self.audio)
-
     def __str__(self):
-        if self.description:
-            return (
-                f'Текстовый вопрос {self.pk}. {self.get_short_description()}'
-            )
-        return f'Аудио вопрос {self.pk}'
+        return f'Вопрос задания. {self.get_short_description()}'
 
     class Meta:
         verbose_name = "Вопрос"
         verbose_name_plural = "Вопросы"
+
+
+@receiver(models.signals.post_delete, sender=Question)
+@receiver(models.signals.post_delete, sender=Task)
+def auto_delete_audio_file(sender, instance, **kwargs):
+    """Удаление файла при удалении записи."""
+    if instance.audio:
+        instance.audio.delete(save=False)
+
+
+@receiver(models.signals.post_delete, sender=Image)
+def auto_delete_image_file(sender, instance, **kwargs):
+    """Удаление файла при удалении записи."""
+    if instance.image:
+        instance.image.delete(save=False)

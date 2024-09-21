@@ -59,7 +59,7 @@ class TaskForm(forms.ModelForm, AudioFileFieldAdminMixin):
     class Meta:
         model = Task
         fields = [
-            'type',
+            'task_type',
             'header',
             'description',
             'audio',

@@ -8,7 +8,7 @@ from django.db.utils import OperationalError
 class Command(BaseCommand):
     """Команда для ожидания подключения к БД."""
 
-    help = 'Команда для ожидания подключения к БД'
+    help = 'Команда для ожидания подключения к БД' # noqa A003
 
     _wait_timeout = 120
 

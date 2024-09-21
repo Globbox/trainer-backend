@@ -54,7 +54,7 @@ def add_thematic_speech_content(apps, _):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('trainer', '0001_initial'),
+        ('trainer', '0002_initial'),
     ]
 
     operations = [

@@ -50,6 +50,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         validators=[email_validator],
         verbose_name="Email",
     )
+    is_email_verified = models.BooleanField(
+        default=False,
+        verbose_name="Подтвержденный email",
+    )
     date_joined = models.DateTimeField(
         default=timezone.now,
         verbose_name="Дата создания",

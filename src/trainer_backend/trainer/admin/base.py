@@ -62,5 +62,5 @@ class ExamAdmin(ModelAdminDisplayNameMixin, admin.ModelAdmin):
     """Админ панель для экзаменов."""
 
     form = ExamForm
-    list_display = ('display_name', 'fipi', 'type')
+    list_display = ('display_name', 'fipi', 'exam_type')
     inlines = [TasksInExamInline]
