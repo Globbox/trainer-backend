@@ -35,7 +35,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['description', 'audio']
+        fields = ['id', 'description', 'audio']
 
 
 class ThematicSpeechContentSerializer(serializers.ModelSerializer):
@@ -116,6 +116,7 @@ class ExtendedTaskSerializer(
             'header',
             'description',
             'images',
+            'audio',
             'questions',
         ]
 
