@@ -140,6 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_RESET_URL = os.getenv('PASSWORD_RESET_URL', '')
+CONFIRM_EMAIL_URL = os.getenv('CONFIRM_EMAIL_URL', '')
 
 AUTH_USER_MODEL = 'user.User'
 
@@ -192,14 +193,6 @@ DEFAULT_ADMIN_PASSWORD = os.getenv('DEFAULT_ADMIN_PASSWORD', '')
 
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '')
-
-# Audio dirs
-AUDIO_GUIDANCE_DIR = os.getenv('AUDIO_GUIDANCE_DIR', 'audio_guidance')
-
-IMAGE_TASK_DIR = os.getenv('IMAGE_TASK_DIR', 'image_task')
-
-AUDIO_TASK_DIR = os.getenv('AUDIO_TASK_DIR', 'audio_task')
-
 
 # Celery
 REDIS_HOST = os.getenv('REDIS_HOST', 'redis')

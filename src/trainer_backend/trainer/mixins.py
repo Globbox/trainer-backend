@@ -1,38 +1,54 @@
+from typing import Sequence
+from typing import Type
+from typing import Union
 from urllib.parse import urljoin
 
 from django.conf import settings
 
-from .mappers import AudioGuidanceFieldMapper
+from trainer_backend.core.file.mixins import FilePathMixin
+
+from .enums import AudioGuidanceType
+from .mappers import AUDIO_GUIDANCE_FIELD_MAPPER
 from .models import AudioGuidance
 from .models import QuestionAudioGuidance
 from .models import TaskTypeParameter
 
 
-class AddAudioGuidanceMixin:
-    """Миксин расширяющий класс для добавления аудио сопровождения задач."""
+class AddAudioGuidanceMixin(FilePathMixin):
+    """Миксин расширяющий класс для добавления аудио сопровождения."""
+
+    _only_types: Union[Sequence[Type[AudioGuidanceType]], None]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        audio_guidance = AudioGuidance.objects.all()
+        if self._only_types is not None and len(self._only_types) > 0:
+            audio_guidance = audio_guidance.filter(
+                guidance_type__in=self._only_types
+            )
+
         self._audio_guidance_map = dict(
-            AudioGuidance.objects.values_list('guidance_type', 'audio')
+            audio_guidance.values_list('guidance_type', 'audio')
         )
 
-    def add_guidance(self, obj, only_types=None):
+    def add_guidance(self, instance):
         """Добавить аудио сопровождение."""
-        return {**obj, **{
-            v: urljoin(settings.MEDIA_URL, self._audio_guidance_map.get(k))
-            for k, v in AudioGuidanceFieldMapper.items()
-            if only_types is None or k in only_types
-        }}
+        for guidance_type, guidance_url in self._audio_guidance_map.items():
+            field = AUDIO_GUIDANCE_FIELD_MAPPER.get(guidance_type)
+            if field is None:
+                continue
+            instance[field] = self._get_file_path(guidance_url)
+
+        return instance
 
 
-class AddTaskParametersMixin:
+class TaskParametersMixin:
     """Миксин расширяющий класс задач."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._audio_task_guidance_map = {
-            task.type: {
+        self._task_params_map = {
+            task.task_type: {
                 'number': task.number,
                 'audio_guidance': task.audio.url,
                 'preparation_seconds': task.preparation_seconds,
@@ -43,31 +59,34 @@ class AddTaskParametersMixin:
             }
             for task in TaskTypeParameter.objects.all()
         }
-
-    def add_task_guidance(self, task_type, instance):
-        """Добавить аудио сопровождение."""
-        audio_guidance = self._audio_task_guidance_map.get(task_type)
-        if audio_guidance is None:
-            return instance
-
-        return {**instance, **audio_guidance}
+    #
+    # def _get_task_params(self, task_type):
+    #     """Получить параметры задания."""
+    #     return TaskParameterSerializer(self._task_params_map.get(
+    #         task_type
+    #     )).data
 
 
 class AddQuestionAudioGuidanceMixin:
-    """Миксин расширяющий класс для добавления аудио сопровождения вопросов."""
+    """Миксин для добавления аудио сопровождения вопросов."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._questions_guidance = QuestionAudioGuidance.objects.order_by(
+            'question_number'
+        )
 
     def add_question_guidance(self, questions):
         """Добавить аудио сопровождение."""
-        questions_guidance = QuestionAudioGuidance.objects.all().order_by(
-            'question_number'
-        ).values(
-            'audio'
-        )
-
+        questions_guidance = self._questions_guidance
+        if len(questions) > len(questions_guidance):
+            questions_guidance += [{
+                'audio_guidance': None
+            }] * (len(questions) - len(questions_guidance))
         return list(
             {
                 'audio_guidance': urljoin(
-                    settings.MEDIA_URL, guidance['audio']
+                    settings.MEDIA_URL, guidance.audio.url
                 ),
                 **task
             }

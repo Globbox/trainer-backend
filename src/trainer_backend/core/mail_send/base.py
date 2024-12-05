@@ -35,7 +35,7 @@ class AbstractEmailSender(ABC):
             from_email=self.from_email,
             to=to_emails,
         )
-        email.content_subtype = 'text/html'
+        email.content_subtype = 'html'
         email.send()
 
 

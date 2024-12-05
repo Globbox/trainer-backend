@@ -1,0 +1,47 @@
+{% extends "tasks/base_task.html" %}
+{% load string_utils %}
+{% block content %}
+    <style>
+        .ims-task-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .ims-task-text {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .ims-images-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .ims-image-container {
+            width: 40%; 
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .ims-task-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .ims-image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <div class="ims-task-container">
+        <div class="ims-task-text">
+            {{ task.description|with_markdown|safe|linebreaks }}
+        </div>
+        <div class="ims-images-row">
+            {% for image in task.images %}
+                <div class="ims-image-container">
+                    <div class="ims-task-title">
+                        {{ image.header }}
+                    </div>
+                    <img src="{{ image.image|real_file_path }}" alt="{{ image.header }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

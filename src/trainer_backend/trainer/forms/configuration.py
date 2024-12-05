@@ -46,7 +46,7 @@ class TaskTypeParameterForm(forms.ModelForm):
 
     class Meta:
         model = TaskTypeParameter
-        fields = ['type', 'number', 'audio', 'preparation_seconds',
+        fields = ['task_type', 'number', 'audio', 'preparation_seconds',
                   'execution_seconds', 'question_execution_seconds']
         widgets = {
             'audio': forms.ClearableFileInput(

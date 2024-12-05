@@ -1,0 +1,55 @@
+{% extends "tasks/base_task.html" %}
+{% load string_utils %}
+{% block content %}
+    <style>
+        .sta-task-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .sta-task-description {
+            width: 60%;
+            font-size: 14px;
+        }
+        .sta-task-image {
+            width: 35%;
+            text-align: center;
+        }
+        .sta-image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sta-task-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .sta-image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        .sta-question {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+    </style>
+    <div class="sta-task-container">
+        <div class="sta-task-description">
+            {{ task.description|with_markdown|safe|linebreaks }}
+            <ol>
+                {% for question in task.questions %}
+                    <li class="sta-question">{{ question.description }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+        <div class="sta-task-image">
+            {% for image in task.images %}
+                <div class="sta-image-container">
+                    <div class="sta-task-title">
+                        {{ image.header }}
+                    </div>
+                    <img src="{{ image.image|real_file_path }}" alt="{{ image.header }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,5 +1,7 @@
 from rest_framework.routers import SimpleRouter
 
+from .viewsets import AnswerViewSet
+from .viewsets import AudioGuidanceViewSet
 from .viewsets import EgeExamViewSet
 from .viewsets import EgeTaskViewSet
 from .viewsets import OgeExamViewSet
@@ -13,6 +15,11 @@ thematic_content_router.register(
     basename='thematic-content'
 )
 
+audio_guidance_router = SimpleRouter()
+audio_guidance_router.register(
+    'audio-guidance', AudioGuidanceViewSet,
+    basename='audio_guidance'
+)
 
 ege_router = SimpleRouter()
 ege_router.register(
@@ -32,4 +39,10 @@ oge_router.register(
 oge_router.register(
     'oge/tasks', OgeTaskViewSet,
     basename='oge-tasks'
+)
+
+
+answer_router = SimpleRouter()
+answer_router.register(
+    'answers', AnswerViewSet, basename='answers'
 )

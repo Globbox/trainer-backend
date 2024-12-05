@@ -4,10 +4,14 @@ from choicesenum import ChoicesEnum
 class AudioGuidanceType(ChoicesEnum):
     """Типы аудио сопровождения."""
 
-    START_EXAM = 1, 'Начало экзамена'
-    END_EXAM = 2, 'Окончание экзамена'
-    BEFORE_TASK_EXECUTION = 3, 'Начало выполнения задания'
-    INTERVIEW_END = 4, 'Завершение интервью'
+    START_EXAM = 1, 'Перед началом экзамена'
+    END_EXAM = 2, 'После окончания экзамена'
+    BEFORE_TASK_EXECUTION = 3, 'Перед началом выполнения задания'
+    AFTER_TASK_EXECUTION = 4, 'После окончания выполнения задания'
+    BEFORE_QUESTION_EXECUTION = 5, 'Перед началом ответа на вопрос'
+    AFTER_QUESTION_EXECUTION = 6, 'После окончания ответа на вопрос'
+    START_INTERVIEW = 7, 'Перед началом интервью'
+    END_INTERVIEW = 8, 'После окончания интервью'
 
 
 class TaskType(ChoicesEnum):
@@ -24,3 +28,11 @@ class ExamType(ChoicesEnum):
 
     EGE = 1, 'ЕГЭ'
     OGE = 2, 'ОГЭ'
+
+
+class AnswerStatus(ChoicesEnum):
+    """Статус ответа."""
+
+    UNPROCESSED = 1, 'Необработан'
+    AUDIO_PROCESSED = 2, 'Аудио данные обработаны'
+    PROCESSED = 3, 'Обработан'

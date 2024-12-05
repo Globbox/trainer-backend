@@ -7,7 +7,7 @@ from trainer_backend.user.models import User
 class Command(BaseCommand):
     """Команда для создания администратора."""
 
-    help = 'Команда для создания администратора'
+    help = 'Команда для создания администратора' # noqa A003
 
     _wait_timeout = 120
 

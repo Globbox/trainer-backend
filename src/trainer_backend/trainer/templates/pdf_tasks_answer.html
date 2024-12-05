@@ -1,0 +1,25 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ file_name }}</title>
+    <style>
+        .task-frame {
+            border: 1px solid black;
+            padding: 5px;
+            width: fit-content;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    {% for task_template in task_templates %}
+        <div class="task-frame">
+            {{ task_template|safe }}
+        </div>
+    {% endfor %}
+</body>
+</html>

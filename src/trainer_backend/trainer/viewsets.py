@@ -1,69 +1,74 @@
+from rest_framework import mixins
+from rest_framework import status
 from rest_framework.permissions import AllowAny
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from trainer_backend.core.api.viewsets import QueryParamMixin
 
 from .enums import ExamType
+from .mappers import AUDIO_GUIDANCE_FIELD_MAPPER
+from .models import Answer
+from .models import AudioGuidance
 from .models import Exam
 from .models import Task
 from .models import ThematicSpeechContent
+from .repositories import AnswerRepository
+from .serializers import AnswerSerializer
+from .serializers import AudioGuidanceSerializer
 from .serializers import ExamSerializer
-from .serializers import ExtendedExamSerializer
-from .serializers import ExtendedTaskSerializer
+from .serializers import TaskAnswerSerializer
 from .serializers import TaskSerializer
 from .serializers import ThematicSpeechContentSerializer
+from .tasks import process_answer_task
 
 
-class ThematicSpeechContentViewSet(ReadOnlyModelViewSet):
+class BaseSimpleModelViewSet(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet
+):
+    """Базовый простой ViewSet для моделей."""
+
+    permission_classes = (AllowAny,)
+    ordering = ('pk',)
+    lookup_value_regex = r'\d+'
+    pagination_class = None
+
+
+class ThematicSpeechContentViewSet(BaseSimpleModelViewSet):
     """API тематического содержания речи."""
 
     queryset = ThematicSpeechContent.objects.all()
     serializer_class = ThematicSpeechContentSerializer
-    ordering = ('pk',)
-    lookup_value_regex = r'\d+'
-    pagination_class = None
+
+
+class AudioGuidanceViewSet(GenericViewSet):
+    """API аудио сопровождения."""
+
     permission_classes = (AllowAny,)
-
-
-class ExamViewSet(QueryParamMixin, ReadOnlyModelViewSet):
-    """ViewSet для работы с экзаменами."""
-
-    queryset = Exam.objects.all()
-    serializer_class = ExamSerializer
-    ordering = ('pk',)
-    lookup_value_regex = r'\d+'
+    queryset = AudioGuidance.objects.all()
+    serializer_class = AudioGuidanceSerializer
     pagination_class = None
-    permission_classes = (AllowAny,)
 
-    def get_queryset(self):
-        """Получить QuerySet."""
-        queryset = super().get_queryset()
+    def list(self, request, *args, **kwargs):  # noqa A003
+        """Получить данные по аудио сопровождению."""
+        audio_guidance = {
+            AUDIO_GUIDANCE_FIELD_MAPPER[
+                audio_guidance.guidance_type
+            ]: audio_guidance.audio
+            for audio_guidance in self.filter_queryset(self.get_queryset())
+        }
 
-        fipi = self._get_query_bool('fipi')
-
-        if fipi is not None:
-            queryset = queryset.filter(
-                fipi=fipi
-            )
-
-        return queryset
-
-    def get_serializer_class(self):
-        """Получить сериализатор."""
-        if self.action == 'retrieve':
-            return ExtendedExamSerializer
-        return super().get_serializer_class()
+        return Response(self.get_serializer(audio_guidance).data)
 
 
-class TaskViewSet(QueryParamMixin, ReadOnlyModelViewSet):
+class TaskViewSet(
+    QueryParamMixin, BaseSimpleModelViewSet
+):
     """ViewSet для работы с вопросами."""
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    ordering = ('pk',)
-    lookup_value_regex = r'\d+'
-    pagination_class = None
-    permission_classes = (AllowAny,)
 
     def get_queryset(self):
         """Получить QuerySet."""
@@ -91,16 +96,34 @@ class TaskViewSet(QueryParamMixin, ReadOnlyModelViewSet):
 
         if task_type is not None:
             queryset = queryset.filter(
-                type=task_type
+                task_type=task_type
             )
 
         return queryset
 
-    def get_serializer_class(self):
-        """Получить сериализатор."""
-        if self.action == 'retrieve':
-            return ExtendedTaskSerializer
-        return super().get_serializer_class()
+
+class ExamViewSet(QueryParamMixin, BaseSimpleModelViewSet):
+    """ViewSet для работы с экзаменами."""
+
+    queryset = Exam.objects.all()
+    serializer_class = ExamSerializer
+
+    def get_serializer_context(self):
+        """Получить контекст сериализатора."""
+        context = super().get_serializer_context()
+        return {**context, 'with_tasks': self._get_query_bool('with_tasks')}
+
+    def get_queryset(self):
+        """Получить QuerySet."""
+        queryset = super().get_queryset()
+        fipi = self._get_query_bool('fipi')
+
+        if fipi is not None:
+            queryset = queryset.filter(
+                fipi=fipi
+            )
+
+        return queryset
 
 
 class EgeExamViewSet(ExamViewSet):
@@ -109,7 +132,7 @@ class EgeExamViewSet(ExamViewSet):
     def get_queryset(self):
         """Получить QuerySet."""
         return super().get_queryset().filter(
-            type=ExamType.EGE
+            exam_type=ExamType.EGE
         )
 
 
@@ -119,7 +142,7 @@ class OgeExamViewSet(ExamViewSet):
     def get_queryset(self):
         """Получить QuerySet."""
         return super().get_queryset().filter(
-            type=ExamType.OGE
+            exam_type=ExamType.OGE
         )
 
 
@@ -129,7 +152,7 @@ class EgeTaskViewSet(TaskViewSet):
     def get_queryset(self):
         """Получить QuerySet."""
         return super().get_queryset().filter(
-            exams__exam__type=ExamType.EGE
+            exams__exam__exam_type=ExamType.EGE
         )
 
 
@@ -140,4 +163,67 @@ class OgeTaskViewSet(TaskViewSet):
         """Получить QuerySet."""
         return super().get_queryset().filter(
             exams__exam__type=ExamType.OGE
+        )
+
+
+class AnswerViewSet(QueryParamMixin, ModelViewSet):
+    """ViewSet для работы с ответами."""
+
+    queryset = Answer.objects.all()
+
+    ordering = ('pk',)
+    lookup_value_regex = r'\d+'
+    serializer_class = AnswerSerializer
+    pagination_class = None
+    permission_classes = (AllowAny,)
+    answer_repository_class = AnswerRepository
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.answer_repository = self.answer_repository_class()
+
+    def get_serializer_context(self):
+        """Получить контекст сериализатора."""
+        context = super().get_serializer_context()
+        return {
+            **context,
+            'with_tasks': self._get_query_bool(
+                'with_tasks', default=False
+            ),
+        }
+
+    def retrieve(self, request, pk=None):
+        """Получить ответ."""
+        try:
+            answer = self.get_queryset().get(pk=pk)
+        except Answer.DoesNotExist:
+            return Response(
+                {"detail": "Ответ не найден."},
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        return Response(
+            self.get_serializer(answer).data, status=status.HTTP_200_OK
+        )
+
+    def create(self, request, *args, **kwargs):
+        """Создать объект."""
+        serializer = TaskAnswerSerializer(
+            data=request.data, many=True, context={'with_tasks': True}
+        )
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        # Создание ответа
+        answer = self.answer_repository.create_answer(
+            user=request.user if request.user.is_authenticated else None
+        )
+        self.answer_repository.add_tasks_answer(
+            answer, serializer.validated_data
+        )
+
+        process_answer_task.delay(answer_id=answer.id)
+        return Response(
+            self.get_serializer(answer).data
         )

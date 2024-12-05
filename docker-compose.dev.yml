@@ -52,6 +52,12 @@ services:
     depends_on:
       - redis
     entrypoint: celery -A trainer_backend.celery_config:celery_app worker -l INFO -n trainer-worker@%n -Q default
+    volumes:
+      - ./src:/www/backend
+      - logs_volume:/www/logs
+      - static_volume:/www/static
+      - media_volume:/www/media
+      - mail_volume:/www/mail
 
   redis:
     image: redis:latest

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from trainer_backend.core.api.exceptions import ApiUniqueConstraintException
+
 from .models import User
 
 
@@ -15,17 +17,35 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserWithPasswordSerializer(UserSerializer):
-    """Сериализатор пользователей с паролем."""
+class LoginUserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя для входа."""
 
-    password = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'email', 'password'
+        ]
+
+
+class RegisterUserSerializer(LoginUserSerializer):
+    """Сериализатор для регистрации пользователей."""
 
     def create(self, validated_data):
         """Создать объект."""
-        if not validated_data.get('password'):
-            raise serializers.ValidationError("Password - обязательное поле")
-
+        if User.objects.filter(
+            email=validated_data.get('email')
+        ).exists():
+            raise ApiUniqueConstraintException(
+                detail='Пользователь с таким email уже существует'
+            )
         return User.objects.create_user(**validated_data)
 
-    class Meta(UserSerializer.Meta):
-        fields = [*UserSerializer.Meta.fields, 'password']
+    class Meta:
+        model = User
+        fields = [
+            'email', 'first_name', 'second_name', 'birthdate', 'phone',
+            'password'
+        ]
