@@ -85,8 +85,8 @@ class QuestionAnswerRepository(BaseModelRepository):
     ):
         """Добавить ответ."""
         return self._write(
-            task=TaskAnswer(task_answer_id),
-            question=Question(question_id),
+            task=TaskAnswer.objects.get(id=task_answer_id),
+            question=Question.objects.get(id=question_id),
             question_number=question_number,
             audio=audio
         )

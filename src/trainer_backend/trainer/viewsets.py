@@ -166,7 +166,10 @@ class OgeTaskViewSet(TaskViewSet):
         )
 
 
-class AnswerViewSet(QueryParamMixin, ModelViewSet):
+class AnswerViewSet(
+    QueryParamMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin,
+    mixins.ListModelMixin, GenericViewSet
+):
     """ViewSet для работы с ответами."""
 
     queryset = Answer.objects.all()
@@ -192,7 +195,16 @@ class AnswerViewSet(QueryParamMixin, ModelViewSet):
             ),
         }
 
-    def retrieve(self, request, pk=None):
+    def list(self, request, *args, **kwargs):
+        """Получить ответы."""
+        queryset = self.filter_queryset(self.get_queryset().filter(
+            user=request.user
+        ))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, pk=None, **kwargs):
         """Получить ответ."""
         try:
             answer = self.get_queryset().get(pk=pk)
