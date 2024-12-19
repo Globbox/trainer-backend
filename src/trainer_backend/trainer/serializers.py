@@ -251,6 +251,7 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
 
     audio = Base64FileField()
     question = serializers.SerializerMethodField(read_only=True)
+    question_id = serializers.IntegerField(write_only=True)
 
     def get_question(self, instance):
         """Получить вопросы."""
@@ -258,7 +259,7 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QuestionAnswer
-        fields = ['id', 'question', 'audio']
+        fields = ['id', 'question', 'question_id', 'audio']
 
 
 class TaskAnswerSerializer(serializers.ModelSerializer):
