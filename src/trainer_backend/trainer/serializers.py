@@ -82,15 +82,15 @@ class ImageSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор вопросов."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._guidance_map = {
-            guidance.question_number: guidance
-            for guidance in QuestionAudioGuidance.objects.all()
-        }
+    _guidance_map = None
 
     def to_representation(self, instance: Question):
         """Преобразование в объект."""
+        if self._guidance_map is None:
+            self._guidance_map = {
+                guidance.question_number: guidance
+                for guidance in QuestionAudioGuidance.objects.all()
+            }
         representation = super().to_representation(instance)
         question_guidance = self._guidance_map.get(
             instance.parent_tasks.first().number, {}
@@ -127,12 +127,7 @@ class AudioGuidanceSerializer(serializers.Serializer):
 class TaskSerializer(serializers.ModelSerializer):
     """Сериализатор заданий."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._task_params_map = {
-            task.task_type: task
-            for task in TaskTypeParameter.objects.all()
-        }
+    _task_params_map = None
 
     type = EnumField(
         enum_class=TaskType, source='task_type'
@@ -182,6 +177,11 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Преобразование в объект."""
+        if self._task_params_map is None:
+            self._task_params_map = {
+                task.task_type: task
+                for task in TaskTypeParameter.objects.all()
+            }
         representation = super().to_representation(instance)
         task_params = self._task_params_map.get(representation['type'])
         if task_params is not None:
