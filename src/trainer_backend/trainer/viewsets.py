@@ -99,6 +99,15 @@ class TaskViewSet(
                 task_type=task_type
             )
 
+        exam_id = self._get_query_param(
+            'exam_id', converter=int
+        )
+
+        if exam_id is not None:
+            queryset = queryset.filter(
+                exam__id=exam_id
+            )
+
         return queryset
 
 
