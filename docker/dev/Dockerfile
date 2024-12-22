@@ -29,8 +29,8 @@ RUN mkdir -p $APP_ROOT/ && \
 
 COPY ./docker/dev/entrypoint.sh $USR_LOCAL_BIN/
 
-RUN sed -i 's/\r//' $USR_LOCAL_BIN/entrypoint.sh && \
-    chmod +x $USR_LOCAL_BIN/entrypoint.sh
+RUN sed -i 's/\r//' $USR_LOCAL_BIN/runserver.sh && \
+    chmod +x $USR_LOCAL_BIN/runserver.sh
 
 WORKDIR $PROJECT_ROOT
 

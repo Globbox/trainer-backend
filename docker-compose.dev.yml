@@ -10,7 +10,7 @@ services:
       - .env
     depends_on:
       - db
-    entrypoint: ["entrypoint.sh"]
+    entrypoint: ["runserver.sh"]
     volumes:
       - ./src:/www/backend
       - logs_volume:/www/logs
