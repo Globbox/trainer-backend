@@ -27,10 +27,10 @@ RUN mkdir -p $APP_ROOT/ && \
     mkdir -p $APP_ROOT/static && \
     mkdir -p $APP_ROOT/media
 
-COPY ./docker/prod/entrypoint.sh $USR_LOCAL_BIN/
+COPY ./docker/prod/runserver.sh $USR_LOCAL_BIN/
 
-RUN sed -i 's/\r//' $USR_LOCAL_BIN/entrypoint.sh && \
-    chmod +x $USR_LOCAL_BIN/entrypoint.sh
+RUN sed -i 's/\r//' $USR_LOCAL_BIN/runserver.sh && \
+    chmod +x $USR_LOCAL_BIN/runserver.sh
 
 WORKDIR $PROJECT_ROOT
 
@@ -39,14 +39,3 @@ COPY ./Pipfile* $PROJECT_ROOT/
 RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY ./src $PROJECT_ROOT
-
-# Create Non-Root user
-# RUN groupadd -r appusergroup && \
-#     useradd -r -g appusergroup \
-#     --no-create-home \
-#     appuser
-
-# RUN chown -R appuser:appusergroup $APP_ROOT $USR_LOCAL_BIN && \
-#     chmod -R u+rwx,g+rx,o-rwx $APP_ROOT
-
-# USER appuser
