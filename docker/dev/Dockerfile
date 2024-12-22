@@ -27,10 +27,10 @@ RUN mkdir -p $APP_ROOT/ && \
     mkdir -p $APP_ROOT/static && \
     mkdir -p $APP_ROOT/media
 
-COPY ./docker/dev/entrypoint.sh $USR_LOCAL_BIN/
+COPY ./docker/dev/runserver.sh $USR_LOCAL_BIN/
 
-RUN sed -i 's/\r//' $USR_LOCAL_BIN/entrypoint.sh && \
-    chmod +x $USR_LOCAL_BIN/entrypoint.sh
+RUN sed -i 's/\r//' $USR_LOCAL_BIN/runserver.sh && \
+    chmod +x $USR_LOCAL_BIN/runserver.sh
 
 WORKDIR $PROJECT_ROOT
 
