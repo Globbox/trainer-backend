@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "==5.0.2"
+mysqlclient = "==2.2.4"
+choicesenum = "==0.7.0"
+djangorestframework = "==3.14.0"
+gunicorn = "==20.1"
+drf-nested-routers = "==0.93.5"
+django-cors-headers = "==4.4.0"
+pydub = "==0.25.1"
+attrs = "==24.2.0"
+celery = "==5.4.0"
+redis = "==5.0.8"
+kombu = "==5.4.1"
+weasyprint = "==62.3"
+markdown = "==3.7"
+
+[dev-packages]
+flake8 = "*"
+flake8-docstrings = "*"
+flake8-builtins = "*"
+flake8-isort = "*"
+isort = "*"
+python-dotenv = "*"
+
+[requires]
+python_version = "3.10"
+python_full_version = "3.10.10"
