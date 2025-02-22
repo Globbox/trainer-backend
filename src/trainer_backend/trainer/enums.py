@@ -12,6 +12,7 @@ class AudioGuidanceType(ChoicesEnum):
     AFTER_QUESTION_EXECUTION = 6, 'После окончания ответа на вопрос'
     START_INTERVIEW = 7, 'Перед началом интервью'
     END_INTERVIEW = 8, 'После окончания интервью'
+    BETWEEN_QUESTION = 9, 'Между вопросами'
 
 
 class TaskType(ChoicesEnum):

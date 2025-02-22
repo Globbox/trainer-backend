@@ -11,6 +11,7 @@ AUDIO_GUIDANCE_FIELD_MAPPER = {
     AudioGuidanceType.AFTER_QUESTION_EXECUTION: 'after_question_audio',
     AudioGuidanceType.START_INTERVIEW: 'start_interview_audio',
     AudioGuidanceType.END_INTERVIEW: 'end_interview_audio',
+    AudioGuidanceType.BETWEEN_QUESTION: 'between_question_audio',
 }
 
 TASK_TYPE_TEMPLATE_MAPPER = {
