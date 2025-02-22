@@ -43,6 +43,7 @@ class QuestionAudioGuidance(
         upload_to='guidance/',
         verbose_name='Аудио файл',
     )
+
     def __str__(self):
         return f'Аудио сопровождения вопроса {self.question_number}'
 

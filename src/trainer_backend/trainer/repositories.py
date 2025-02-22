@@ -96,6 +96,7 @@ class TaskAnswerRepository(BaseModelRepository):
     """Репозиторий для работы с заданиями в ответах."""
 
     _model = TaskAnswer
+
     def add_task_answer(
         self, answer: Answer, task: Task, task_number, audio=None
     ):
