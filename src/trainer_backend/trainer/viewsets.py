@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.viewsets import ModelViewSet
 
 from trainer_backend.core.api.viewsets import QueryParamMixin
 
@@ -67,18 +66,25 @@ class TaskViewSet(
 ):
     """ViewSet для работы с вопросами."""
 
+    _exam_type: ExamType = None
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        assert self._exam_type, ValueError('Необходимо указать тип экзамена')
+
     def get_queryset(self):
         """Получить QuerySet."""
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(
+            exams__exam__exam_type=self._exam_type,
+        )
 
         fipi = self._get_query_bool('fipi')
 
         if fipi is not None:
             queryset = queryset.filter(
-                exams_fipi=fipi
+                exams__exam__fipi=fipi
             )
 
         thematic_content_id = self._get_query_param(
@@ -158,21 +164,13 @@ class OgeExamViewSet(ExamViewSet):
 class EgeTaskViewSet(TaskViewSet):
     """ViewSet для работы с заданиями ЕГЭ."""
 
-    def get_queryset(self):
-        """Получить QuerySet."""
-        return super().get_queryset().filter(
-            exams__exam__exam_type=ExamType.EGE
-        )
+    _exam_type: ExamType = ExamType.EGE
 
 
 class OgeTaskViewSet(TaskViewSet):
     """ViewSet для работы с заданиями ЕГЭ."""
 
-    def get_queryset(self):
-        """Получить QuerySet."""
-        return super().get_queryset().filter(
-            exams__exam__type=ExamType.OGE
-        )
+    _exam_type: ExamType = ExamType.OGE
 
 
 class AnswerViewSet(
@@ -204,7 +202,7 @@ class AnswerViewSet(
             ),
         }
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs): # noqa A003
         """Получить ответы."""
         queryset = self.filter_queryset(self.get_queryset().filter(
             user=request.user

@@ -129,7 +129,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     _task_params_map = None
 
-    type = EnumField(
+    type = EnumField( # noqa A003
         enum_class=TaskType, source='task_type'
     )
     exam = serializers.SerializerMethodField(
@@ -215,7 +215,7 @@ class ExamSerializer(serializers.ModelSerializer):
         if not self.context.get('with_tasks', False):
             self.fields.pop('tasks')
 
-    type = EnumField(
+    type = EnumField( # noqa A003
         enum_class=ExamType, source='exam_type'
     )
     tasks = serializers.SerializerMethodField()
