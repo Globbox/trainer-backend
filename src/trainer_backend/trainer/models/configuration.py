@@ -2,6 +2,7 @@ from django.db import models
 from django.dispatch import receiver
 
 from trainer_backend.trainer.enums import AudioGuidanceType
+from trainer_backend.trainer.enums import ExamType
 from trainer_backend.trainer.enums import TaskType
 
 from .base import ModelWithAudioFileMixin
@@ -55,8 +56,11 @@ class QuestionAudioGuidance(
 class TaskTypeParameter(ModelWithAudioFileMixin, models.Model):
     """Параметры для типов заданий."""
 
+    exam_type = models.SmallIntegerField(
+        choices=ExamType.choices(),
+        verbose_name="Тип экзамена"
+    )
     task_type = models.SmallIntegerField(
-        unique=True,
         choices=TaskType.choices(),
         verbose_name='Тип задания',
     )
@@ -82,7 +86,7 @@ class TaskTypeParameter(ModelWithAudioFileMixin, models.Model):
     )
 
     class Meta:
-        unique_together = (('task_type', 'number'),)
+        unique_together = (('exam_type', 'task_type', 'number'),)
         verbose_name = "Параметр для типов заданий"
         verbose_name_plural = "Параметры для типов заданий"
 

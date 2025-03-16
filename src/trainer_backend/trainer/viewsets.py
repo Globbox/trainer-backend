@@ -74,6 +74,11 @@ class TaskViewSet(
         super().__init__(**kwargs)
         assert self._exam_type, ValueError('Необходимо указать тип экзамена')
 
+    def get_serializer_context(self):
+        """Получить контекст сериализатора."""
+        context = super().get_serializer_context()
+        return {**context, 'exam_type': self._exam_type}
+
     def get_queryset(self):
         """Получить QuerySet."""
         queryset = super().get_queryset().filter(

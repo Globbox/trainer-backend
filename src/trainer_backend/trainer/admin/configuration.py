@@ -32,5 +32,5 @@ class TaskTypeParameterAdmin(admin.ModelAdmin, AudioFileFieldAdminMixin):
     """Класс для администрирования параметров для заданий."""
 
     form = TaskTypeParameterForm
-    list_display = ('task_type', 'audio_preview')
+    list_display = ('exam_type', 'task_type', 'audio_preview')
     readonly_fields = ('audio_preview',)
