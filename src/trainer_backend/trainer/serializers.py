@@ -180,7 +180,9 @@ class TaskSerializer(serializers.ModelSerializer):
         if self._task_params_map is None:
             self._task_params_map = {
                 task.task_type: task
-                for task in TaskTypeParameter.objects.all()
+                for task in TaskTypeParameter.objects.filter(
+                    exam_type=self.context.get('exam_type', ExamType.EGE)
+                )
             }
         representation = super().to_representation(instance)
         task_params = self._task_params_map.get(representation['type'])

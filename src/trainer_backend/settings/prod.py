@@ -33,7 +33,9 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'common',
-            'filename': os.path.join(BASE_DIR.parent.parent, 'logs', 'app.log'),
+            'filename': os.path.join(
+                BASE_DIR.parent.parent, 'logs', 'app.log'
+            ),
             'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
