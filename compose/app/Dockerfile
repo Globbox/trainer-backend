@@ -27,10 +27,16 @@ RUN mkdir -p $APP_ROOT/ && \
     mkdir -p $APP_ROOT/static && \
     mkdir -p $APP_ROOT/media
 
-COPY ./docker/dev/runserver.sh $USR_LOCAL_BIN/
+COPY ./compose/app/entrypoints/ $USR_LOCAL_BIN/
 
-RUN sed -i 's/\r//' $USR_LOCAL_BIN/runserver.sh && \
-    chmod +x $USR_LOCAL_BIN/runserver.sh
+RUN sed -i 's/\r//' $USR_LOCAL_BIN/run_server.sh && \
+    chmod +x $USR_LOCAL_BIN/run_server.sh && \
+    sed -i 's/\r//' $USR_LOCAL_BIN/run_dev_server.sh && \
+    chmod +x $USR_LOCAL_BIN/run_dev_server.sh && \
+    sed -i 's/\r//' $USR_LOCAL_BIN/run_celery.sh && \
+    chmod +x $USR_LOCAL_BIN/run_celery.sh && \
+    sed -i 's/\r//' $USR_LOCAL_BIN/run_celery_beat.sh && \
+    chmod +x $USR_LOCAL_BIN/run_celery_beat.sh
 
 WORKDIR $PROJECT_ROOT
 
@@ -39,14 +45,3 @@ COPY ./Pipfile* $PROJECT_ROOT/
 RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY ./src $PROJECT_ROOT
-
-# # Create Non-Root user
-# RUN groupadd -r appusergroup && \
-#     useradd -r -g appusergroup \
-#     --no-create-home \
-#     appuser
-
-# RUN chown -R appuser:appusergroup $APP_ROOT $USR_LOCAL_BIN && \
-#     chmod -R u+rwx,g+rx,o-rwx $APP_ROOT
-
-# USER appuser
