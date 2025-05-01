@@ -229,7 +229,8 @@ class ExamSerializer(serializers.ModelSerializer):
         ).annotate(
             task_number=Subquery(
                 TaskTypeParameter.objects.filter(
-                    task_type=OuterRef('task_type')
+                    task_type=OuterRef('task_type'),
+                    exam_type=OuterRef('task_type'),
                 ).values('number')[:1]
             )
         ).order_by('task_number')
