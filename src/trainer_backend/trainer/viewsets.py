@@ -1,3 +1,5 @@
+from django.db.models import OuterRef
+from django.db.models import Subquery
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -12,6 +14,7 @@ from .models import Answer
 from .models import AudioGuidance
 from .models import Exam
 from .models import Task
+from .models import TaskTypeParameter
 from .models import ThematicSpeechContent
 from .repositories import AnswerRepository
 from .serializers import AnswerSerializer
@@ -83,6 +86,15 @@ class TaskViewSet(
         """Получить QuerySet."""
         queryset = super().get_queryset().filter(
             exams__exam__exam_type=self._exam_type,
+        ).annotate(
+            task_type_number=Subquery(
+                TaskTypeParameter.objects.filter(
+                    exam_type=OuterRef('exams__exam__exam_type'),
+                    task_type=OuterRef('task_type'),
+                ).values('number')[:1]
+            )
+        ).order_by(
+            'task_type_number'
         )
 
         fipi = self._get_query_bool('fipi')
